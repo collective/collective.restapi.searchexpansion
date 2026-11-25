@@ -1,0 +1,8 @@
+<configure xmlns="http://namespaces.zope.org/zope">
+
+  <adapter
+      factory=".expansion.SearchExpansion"
+      name="search"
+      />
+
+</configure>
