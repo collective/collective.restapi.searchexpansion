@@ -1,0 +1,43 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@v6
+      - run: uvx ruff@latest check --no-fix src tests
+      - run: uvx ruff@latest format --check src tests
+
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - python: "3.12"
+            plone: "6.2.3"
+          - python: "3.13"
+            plone: "6.2.3"
+    name: Python ${{ matrix.python }}, Plone ${{ matrix.plone }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@v6
+      - name: Install
+        run: |
+          uv venv -p ${{ matrix.python }}
+          uv pip install -c https://dist.plone.org/release/${{ matrix.plone }}/constraints.txt -e '.[test]'
+      - name: Test
+        run: .venv/bin/pytest
